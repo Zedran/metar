@@ -1,3 +1,5 @@
+@ECHO OFF
+
 set source_path=./src
 set output_path=./build/metar.exe
 
