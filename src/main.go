@@ -36,7 +36,7 @@ var (
 	}
 )
 
-func getReport(code string, tafOn bool) (string, error) {
+func getReport(code string, tafOn bool) string {
 	var taf string
 	
 	if tafOn {
@@ -47,20 +47,26 @@ func getReport(code string, tafOn bool) (string, error) {
 
 	resp, err := client.Get(fmt.Sprintf(URL, code, taf))
 	if err != nil {
-		return "", err
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
-	return parseReport(resp, code, tafOn)
+	report, err := parseReport(resp, code, tafOn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return report
 }
 
 func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 	page := html.NewTokenizer(resp.Body)
 
+	const METAR_NF_PHRASE string = "No METAR found for"
+
 	var (
-		str string
-		output     = make([]string, 0)
-		p bool = false
+		str    string
+		output        = make([]string, 0)
 	)
 
 	for page.Next() != html.ErrorToken {
@@ -68,23 +74,14 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 
 		if token.Type == html.TextToken {
 			str = token.String()
-			if p {
-				print(str)
-			}
 			if strings.Contains(str, code) {
 				output = append(output, str)
-			}
-		} else if token.Type == html.CommentToken {
-			if strings.Contains(token.String(), "Data starts here") {
-				p = true
-			} else if strings.Contains(token.String(), "Data ends here") {
-				p = false
 			}
 		}
 	}
 
 	var err error
-	if len(output) == 0 {
+	if len(output) == 0 || strings.Contains(output[0], METAR_NF_PHRASE) {
 		err = errReportNotFound
 	}
 
@@ -112,9 +109,5 @@ func main() {
 		log.Fatal(errInvalidArguments)
 	}
 
-	report, err := getReport(strings.ToUpper(os.Args[1]), taf)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(report)
+	fmt.Println(getReport(strings.ToUpper(os.Args[1]), taf))
 }
