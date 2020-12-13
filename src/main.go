@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,21 +13,10 @@ import (
 	"golang.org/x/net/html"
 )
 
-const (
-	URL string       = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=on"
-
-	HELP_MSG string  = "Proper format: 'metar <code> [notaf]' or 'metar <link>'"
-
-	MIN_ARGC         = 2  // metar code
-	MAX_ARGC         = 3  // metar code notaf
-
-	NOTAF_ARG string = "NOTAF"
-	LINK_ARG  string = "LINK"
-)
+const URL string = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=on"
 
 var (
-	errInvalidArguments = errors.New("Invalid arguments. An ICAO airport code must be specified. Add 'taf' for TAF report.")
-	errReportNotFound   = errors.New("Report not found. The airfield code may be invalid.")
+	errReportNotFound = errors.New("Report not found. The airfield code may be invalid.")
 
 	client = http.Client{
 		Timeout: 30 * time.Second,
@@ -35,6 +25,12 @@ var (
 		},
 	}
 )
+
+func fatal(message string) {
+	fmt.Println(message)
+	flag.PrintDefaults()
+	os.Exit(1)
+}
 
 func getReport(code string, tafOn bool) string {
 	var taf string
@@ -60,20 +56,16 @@ func getReport(code string, tafOn bool) string {
 }
 
 func parseReport(resp *http.Response, code string, taf bool) (string, error) {
+	const METAR_NF_PHRASE string = "No METAR found for"
+	
 	page := html.NewTokenizer(resp.Body)
 
-	const METAR_NF_PHRASE string = "No METAR found for"
-
-	var (
-		str    string
-		output        = make([]string, 0)
-	)
-
+	output := make([]string, 0)
 	for page.Next() != html.ErrorToken {
 		token := page.Token()
 
 		if token.Type == html.TextToken {
-			str = token.String()
+			str := token.String()
 			if strings.Contains(str, code) {
 				output = append(output, str)
 			}
@@ -91,23 +83,21 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 func main() {
 	log.SetFlags(0)
 
-	taf := true
+	action := flag.String("a", "m", "action:\n    m - get METAR\n    l - display download link\n")
+	code   := flag.String("c", "", "a 4-letter ICAO airport code")
+	noTAF  := flag.Bool("notaf", false, "do not get TAF report")
 
-	switch len(os.Args) {
-	case 2:
-		if strings.ToUpper(os.Args[1]) == LINK_ARG {
-			fmt.Printf(URL, "<CODE>", "<on/off>")
-			os.Exit(0)
+	flag.Parse()
+
+	switch strings.ToUpper(*action) {
+	case "L":
+		fmt.Printf(URL, "<CODE>", "<on/off>")
+	case "M":
+		if len(*code) != 4 {
+			fatal("ICAO code not specified or of incorrect length.")
 		}
-	case 3:
-		if strings.ToUpper(os.Args[2]) == NOTAF_ARG {
-			taf = false
-			break
-		}
-		fallthrough
+		fmt.Println(getReport(strings.ToUpper(*code), !*noTAF))
 	default:
-		log.Fatal(errInvalidArguments)
+		fatal("Unknown action flag.")
 	}
-
-	fmt.Println(getReport(strings.ToUpper(os.Args[1]), taf))
 }
