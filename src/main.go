@@ -29,7 +29,7 @@ var (
 	errReportNotFound   = errors.New("Report not found. The airfield code may be invalid.")
 
 	client = http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
 			DisableKeepAlives: true,
 		},
@@ -60,6 +60,7 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 	var (
 		str string
 		output     = make([]string, 0)
+		p bool = false
 	)
 
 	for page.Next() != html.ErrorToken {
@@ -67,8 +68,17 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 
 		if token.Type == html.TextToken {
 			str = token.String()
+			if p {
+				print(str)
+			}
 			if strings.Contains(str, code) {
 				output = append(output, str)
+			}
+		} else if token.Type == html.CommentToken {
+			if strings.Contains(token.String(), "Data starts here") {
+				p = true
+			} else if strings.Contains(token.String(), "Data ends here") {
+				p = false
 			}
 		}
 	}
