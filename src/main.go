@@ -13,25 +13,36 @@ import (
 	"golang.org/x/net/html"
 )
 
-const URL string = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=on"
+const (
+	// Source URL
+	URL string    = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=on"
+	
+	// HTTP request timeout time
+	TIMEOUT_TIME  = 30
+	
+	// Airport ICAO code length
+	ICAO_CODE_LEN =  4
+)
 
 var (
 	errReportNotFound = errors.New("Report not found. The airfield code may be invalid.")
 
 	client = http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: TIMEOUT_TIME * time.Second,
 		Transport: &http.Transport{
 			DisableKeepAlives: true,
 		},
 	}
 )
 
+// Displays feedback message, prints flags list and exits the program with 1 status.
 func fatal(message string) {
 	fmt.Println(message)
 	flag.PrintDefaults()
 	os.Exit(1)
 }
 
+// Gets report from website and returns parsed result.
 func getReport(code string, tafOn bool) string {
 	var taf string
 	
@@ -55,6 +66,8 @@ func getReport(code string, tafOn bool) string {
 	return report
 }
 
+// Parses the response body, looking for METAR and, optionally, TAF phrases. Returns error
+// if the report for the given ICAO code was not found.
 func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 	const METAR_NF_PHRASE string = "No METAR found for"
 	
@@ -83,21 +96,23 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 func main() {
 	log.SetFlags(0)
 
-	action := flag.String("a", "m", "action:\n    m - get METAR\n    l - display download link\n")
-	code   := flag.String("c", "", "a 4-letter ICAO airport code")
+	action := flag.String("a", "m", "action:\n    m (metar) - get METAR\n    l (link)  - display download link\n")
+	code   := flag.String("c", "", "a 4-letter ICAO airport code, you can specify it without a flag")
 	noTAF  := flag.Bool("notaf", false, "do not get TAF report")
 
 	flag.Parse()
 
 	switch strings.ToUpper(*action) {
-	case "L":
+	case "L", "LINK":
 		fmt.Printf(URL, "<CODE>", "<on/off>")
-	case "M":
-		if len(*code) != 4 {
-			fatal("ICAO code not specified or of incorrect length.")
+	case "M", "METAR":
+		if len(*code) != ICAO_CODE_LEN {
+			if *code = flag.Arg(0); len(*code) != ICAO_CODE_LEN {
+				fatal("ICAO code not specified or of incorrect length.")
+			}
 		}
 		fmt.Println(getReport(strings.ToUpper(*code), !*noTAF))
 	default:
-		fatal("Unknown action flag.")
+		fatal(fmt.Sprintf("Unknown action flag value '%s'.", *action))
 	}
 }
