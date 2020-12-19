@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-go build -o ./build/metar -ldflags "-s -w" ./src
+go build -o ./build/metar -trimpath -ldflags "-s -w" ./src
