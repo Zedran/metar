@@ -15,7 +15,7 @@ import (
 
 const (
 	// Source URL
-	URL string    = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=on"
+	URL string    = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=off"
 	
 	// HTTP request timeout time
 	TIMEOUT_TIME  = 30
