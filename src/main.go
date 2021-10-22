@@ -1,16 +1,15 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
-
-	"golang.org/x/net/html"
 )
 
 const (
@@ -22,17 +21,32 @@ const (
 	
 	// Airport ICAO code length
 	ICAO_CODE_LEN =  4
+
+	// Report signatures used for finding right content and ensuring the proper format
+	METAR_SIG     = "METAR"
+	TAF_SIG       = "TAF"
+	
+	// This phrase is returned when code is not assigned to any airport
+	NF_PHRASE     = "No report found for %s"
+
+	// '<br/>' and '&nbsp;' substitutes used for output formatting
+	BR            = "\n"
+	NBSP          = " "
+
+	// output format, mirrors the website's way of displaying reports
+	OUT_FORMAT    = "%s\n\n%s"
 )
 
 var (
-	errReportNotFound = errors.New("Report not found. The airfield code may be invalid.")
-
 	client = http.Client{
 		Timeout: TIMEOUT_TIME * time.Second,
 		Transport: &http.Transport{
 			DisableKeepAlives: true,
 		},
 	}
+
+	// Regexp for finding the content of the '<code>' tags
+	exp = regexp.MustCompile("<code>(.*)</code>")
 )
 
 // Displays feedback message, prints flags list and exits the program with 1 status.
@@ -69,28 +83,30 @@ func getReport(code string, tafOn bool) string {
 // Parses the response body, looking for METAR and, optionally, TAF phrases. Returns error
 // if the report for the given ICAO code was not found.
 func parseReport(resp *http.Response, code string, taf bool) (string, error) {
-	const METAR_NF_PHRASE string = "No METAR found for"
-	
-	page := html.NewTokenizer(resp.Body)
+	stream, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
 
-	output := make([]string, 0)
-	for page.Next() != html.ErrorToken {
-		token := page.Token()
+	matches := exp.FindAllSubmatch(stream, -1)
 
-		if token.Type == html.TextToken {
-			str := token.String()
-			if strings.Contains(str, code) {
-				output = append(output, str)
-			}
+	if len(matches) == 0 {
+		return fmt.Sprintf(NF_PHRASE, code), nil
+	}
+
+	var metarContent, tafContent string
+
+	for i := range matches {
+		str := string(matches[i][1])
+
+		if strings.Contains(str, TAF_SIG) {
+			tafContent = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
+		} else {
+			metarContent = METAR_SIG + NBSP + string(matches[0][1])
 		}
 	}
 
-	var err error
-	if len(output) == 0 || strings.Contains(output[0], METAR_NF_PHRASE) {
-		err = errReportNotFound
-	}
-
-	return "METAR " + strings.Join(output, "\n"), err
+	return fmt.Sprintf(OUT_FORMAT, metarContent, tafContent), nil
 }
 
 func main() {
