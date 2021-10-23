@@ -112,23 +112,15 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 func main() {
 	log.SetFlags(0)
 
-	action := flag.String("a", "m", "action:\n    m (metar) - get METAR\n    l (link)  - display download link\n")
 	code   := flag.String("c", "", "a 4-letter ICAO airport code, you can specify it without a flag")
 	noTAF  := flag.Bool("notaf", false, "do not get TAF report")
 
 	flag.Parse()
 
-	switch strings.ToUpper(*action) {
-	case "L", "LINK":
-		fmt.Printf(URL, "<CODE>", "<on/off>")
-	case "M", "METAR":
-		if len(*code) != ICAO_CODE_LEN {
-			if *code = flag.Arg(0); len(*code) != ICAO_CODE_LEN {
-				fatal("ICAO code not specified or of incorrect length.")
-			}
+	if len(*code) != ICAO_CODE_LEN {
+		if *code = flag.Arg(0); len(*code) != ICAO_CODE_LEN {
+			fatal("ICAO code not specified or of incorrect length.")
 		}
-		fmt.Println(getReport(strings.ToUpper(*code), !*noTAF))
-	default:
-		fatal(fmt.Sprintf("Unknown action flag value '%s'.", *action))
 	}
+	fmt.Println(getReport(strings.ToUpper(*code), !*noTAF))
 }
