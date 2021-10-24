@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -48,13 +47,6 @@ var (
 	// Regexp for finding the content of the '<code>' tags
 	exp = regexp.MustCompile("<code>(.*)</code>")
 )
-
-// Displays feedback message, prints flags list and exits the program with 1 status.
-func fatal(message string) {
-	fmt.Println(message)
-	flag.PrintDefaults()
-	os.Exit(1)
-}
 
 /* Extracts reports from the website and returns parsed result. */
 func GetReport(codes []string, tafOn bool) string {
@@ -153,12 +145,12 @@ func main() {
 	codes := flag.Args()
 
 	if len(codes) == 0 {
-		fatal("No code specified.")
+		log.Fatal("No code specified.")
 	}
 
 	for i := range codes {
 		if len(codes[i]) != ICAO_CODE_LEN {
-			fatal(fmt.Sprintf("Improper code format: %s", codes[i]))
+			log.Fatal(fmt.Sprintf("Improper code format: '%s'", codes[i]))
 		}
 	}
 
