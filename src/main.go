@@ -101,7 +101,7 @@ func parseResponse(resp *http.Response, codes []string, taf bool) (string, error
 		
 		for i := range finds {
 			if strings.Contains(str, finds[i].Code) {
-				if strings.Contains(str, TAF_SIG) {
+				if taf && strings.Contains(str, TAF_SIG) {
 					finds[i].TAF = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
 				} else {
 					finds[i].METAR = METAR_SIG + NBSP + str
