@@ -15,6 +15,9 @@ import (
 const (
 	// Source URL
 	URL string    = "https://www.aviationweather.gov/metar/data?ids=%s&format=raw&hours=0&taf=%s&layout=off"
+
+	// Character delimiting codes within the link
+	CODES_DELIM   = "+"
 	
 	// HTTP request timeout time
 	TIMEOUT_TIME  = 30
@@ -25,16 +28,13 @@ const (
 	// Report signatures used for finding right content and ensuring the proper format
 	METAR_SIG     = "METAR"
 	TAF_SIG       = "TAF"
-	
-	// This phrase is returned when code is not assigned to any airport
-	NF_PHRASE     = "No report found for %s"
 
 	// '<br/>' and '&nbsp;' substitutes used for output formatting
 	BR            = "\n"
 	NBSP          = " "
 
-	// output format, mirrors the website's way of displaying reports
-	OUT_FORMAT    = "%s\n\n%s"
+	// Output delimiter used when more than one airport code is specified
+	OUT_DELIM     = "\n\n---------------------------------------\n\n"
 )
 
 var (
@@ -56,8 +56,8 @@ func fatal(message string) {
 	os.Exit(1)
 }
 
-// Gets report from website and returns parsed result.
-func getReport(code string, tafOn bool) string {
+/* Extracts reports from the website and returns parsed result. */
+func GetReport(codes []string, tafOn bool) string {
 	var taf string
 	
 	if tafOn {
@@ -66,13 +66,13 @@ func getReport(code string, tafOn bool) string {
 		taf = "off"
 	}
 
-	resp, err := client.Get(fmt.Sprintf(URL, code, taf))
+	resp, err := client.Get(fmt.Sprintf(URL, strings.Join(codes, CODES_DELIM), taf))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
-	report, err := parseReport(resp, code, tafOn)
+	report, err := parseReport(resp, codes, tafOn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,9 +80,10 @@ func getReport(code string, tafOn bool) string {
 	return report
 }
 
-// Parses the response body, looking for METAR and, optionally, TAF phrases. Returns error
-// if the report for the given ICAO code was not found.
-func parseReport(resp *http.Response, code string, taf bool) (string, error) {
+/* Parses the response body, looking for METAR and, optionally, TAF phrases.
+ * Errors returned relate to resp.Body reading problems.
+ */
+func parseReport(resp *http.Response, codes []string, taf bool) (string, error) {
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -90,37 +91,76 @@ func parseReport(resp *http.Response, code string, taf bool) (string, error) {
 
 	matches := exp.FindAllSubmatch(stream, -1)
 
-	if len(matches) == 0 {
-		return fmt.Sprintf(NF_PHRASE, code), nil
+	finds := make([]*Finding, len(codes))
+	for i := range finds {
+		finds[i] = NewFinding(strings.ToUpper(codes[i]))
 	}
-
-	var metarContent, tafContent string
 
 	for i := range matches {
 		str := string(matches[i][1])
-
-		if strings.Contains(str, TAF_SIG) {
-			tafContent = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
-		} else {
-			metarContent = METAR_SIG + NBSP + string(matches[0][1])
+		
+		for i := range finds {
+			if strings.Contains(str, finds[i].Code) {
+				if strings.Contains(str, TAF_SIG) {
+					finds[i].TAF = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
+				} else {
+					finds[i].METAR = METAR_SIG + NBSP + str
+				}
+				break
+			}
 		}
 	}
 
-	return fmt.Sprintf(OUT_FORMAT, metarContent, tafContent), nil
+	reports := make([]string, len(finds))
+
+	for i := range finds {
+		reports[i] = finds[i].ToString(taf)
+	}
+
+	return strings.Join(reports, OUT_DELIM), nil
+}
+
+/* Returns true if code is inside slice s. */
+func Contains(s []string, code string) bool {
+	for i := range s {
+		if s[i] == code {
+			return true
+		}
+	}
+	return false
+}
+
+/* Rewrites the passed slice, omitting duplicate values. */
+func RemoveDuplicates(codes []string) []string {
+	clean := make([]string, 0, len(codes))
+
+	for i := range codes {
+		if !Contains(clean, codes[i]) {
+			clean = append(clean, codes[i])
+		}
+	}
+
+	return clean
 }
 
 func main() {
 	log.SetFlags(0)
 
-	code   := flag.String("c", "", "a 4-letter ICAO airport code, you can specify it without a flag")
-	noTAF  := flag.Bool("notaf", false, "do not get TAF report")
+	noTAF := flag.Bool("notaf", false, "do not get TAF report")
 
 	flag.Parse()
 
-	if len(*code) != ICAO_CODE_LEN {
-		if *code = flag.Arg(0); len(*code) != ICAO_CODE_LEN {
-			fatal("ICAO code not specified or of incorrect length.")
+	codes := flag.Args()
+
+	if len(codes) == 0 {
+		fatal("No code specified.")
+	}
+
+	for i := range codes {
+		if len(codes[i]) != ICAO_CODE_LEN {
+			fatal(fmt.Sprintf("Improper code format: %s", codes[i]))
 		}
 	}
-	fmt.Println(getReport(strings.ToUpper(*code), !*noTAF))
+
+	fmt.Println(GetReport(RemoveDuplicates(codes), !*noTAF))
 }
