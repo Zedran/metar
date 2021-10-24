@@ -72,7 +72,7 @@ func GetReport(codes []string, tafOn bool) string {
 	}
 	defer resp.Body.Close()
 
-	report, err := parseReport(resp, codes, tafOn)
+	report, err := parseResponse(resp, codes, tafOn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func GetReport(codes []string, tafOn bool) string {
 /* Parses the response body, looking for METAR and, optionally, TAF phrases.
  * Errors returned relate to resp.Body reading problems.
  */
-func parseReport(resp *http.Response, codes []string, taf bool) (string, error) {
+func parseResponse(resp *http.Response, codes []string, taf bool) (string, error) {
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
