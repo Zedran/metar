@@ -89,8 +89,14 @@ func parseResponse(resp *http.Response, codes []string, taf bool) (string, error
 		
 		for i := range finds {
 			if strings.Contains(str, finds[i].Code) {
-				if taf && strings.Contains(str, TAF_SIG) {
+				if taf && len(finds[i].METAR) > 0 {
+					// TAF always comes second, so it can be assumed that if len(f.METAR) > 0, the report is TAF
 					finds[i].TAF = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
+
+					if !strings.Contains(finds[i].TAF, TAF_SIG) {
+						// Since american reports do not have TAF signature in website's code, it is appended
+						finds[i].TAF = TAF_SIG + NBSP + finds[i].TAF
+					}
 				} else {
 					finds[i].METAR = METAR_SIG + NBSP + str
 				}
