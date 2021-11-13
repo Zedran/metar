@@ -1,3 +1,3 @@
 module github.com/Zedran/weather-reports
 
-go 1.16
+go 1.17
