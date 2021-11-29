@@ -40,7 +40,7 @@ Conditions expected to develop on 7th at 16:00: scattered clouds (3/8 - 4/8 cove
 
 ## Application
 
-## Installation
+### Installation
 
 You can download and unpack the zipped release into the directory of your choice. I would, however, encourage you to clone this repo and compile the code yourself. I have provided build scripts for Windows and Linux. 
 
