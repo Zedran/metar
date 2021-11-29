@@ -40,6 +40,12 @@ Conditions expected to develop on 7th at 16:00: scattered clouds (3/8 - 4/8 cove
 
 ## Application
 
+## Installation
+
+You can download and unpack the zipped release into the directory of your choice. I would, however, encourage you to clone this repo and compile the code yourself. I have provided build scripts for Windows and Linux. 
+
+Once you have your program directory set up, the next step is to add it to PATH. At this point, calling `metar` from command line should result in response `No code specified.`.
+
 ### Command syntax
 
 ```
