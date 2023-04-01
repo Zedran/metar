@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -86,18 +87,23 @@ func parseResponse(resp *http.Response, codes []string, taf bool) (string, error
 
 	for i := range matches {
 		str := string(matches[i][1])
-		
+
 		for i := range finds {
+			noMETARNotice := fmt.Sprintf("No METAR found for %s", finds[i].Code)
+
+			if len(finds[i].METAR) == 0 && bytes.Contains(stream, []byte(noMETARNotice)) {
+				finds[i].METAR = noMETARNotice
+			}
+			
 			if strings.Contains(str, finds[i].Code) {
 				if taf && len(finds[i].METAR) > 0 {
-					// TAF always comes second, so it can be assumed that if len(f.METAR) > 0, the report is TAF
 					finds[i].TAF = strings.ReplaceAll(strings.ReplaceAll(str, "<br/>", BR), "&nbsp;", NBSP)
 
 					if !strings.Contains(finds[i].TAF, TAF_SIG) {
 						// Since american reports do not have TAF signature in website's code, it is appended
 						finds[i].TAF = TAF_SIG + NBSP + finds[i].TAF
 					}
-				} else {
+				} else if len(finds[i].METAR) == 0 {
 					finds[i].METAR = METAR_SIG + NBSP + str
 				}
 				break
