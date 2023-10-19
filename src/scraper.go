@@ -23,13 +23,13 @@ const (
 	// Output delimiter used when more than one airport code is specified
 	OUT_DELIM     = "\n\n---------------------------------------\n\n"
 
-	// HTTP request timeout time
-	TIMEOUT_TIME  = 30
+	// HTTP client timeout in seconds
+	CLIENT_TIMEOUT = 30
 )
 
 var (
 	client = http.Client{
-		Timeout: TIMEOUT_TIME * time.Second,
+		Timeout: CLIENT_TIMEOUT * time.Second,
 		Transport: &http.Transport{
 			DisableKeepAlives: true,
 		},
