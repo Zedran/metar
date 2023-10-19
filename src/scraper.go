@@ -11,17 +11,17 @@ import (
 
 const (
 	// Source URL
-	URL string    = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
+	URL string     = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
 
 	// Character delimiting codes within the link
-	CODES_DELIM   = ","
+	CODES_DELIM    = ","
 
 	// Report signatures used for finding right content and ensuring the proper format
-	METAR_SIG     = "METAR"
-	TAF_SIG       = "TAF"
+	METAR_SIG      = "METAR"
+	TAF_SIG        = "TAF"
 
 	// Output delimiter used when more than one airport code is specified
-	OUT_DELIM     = "\n\n---------------------------------------\n\n"
+	OUT_DELIM      = "\n\n---------------------------------------\n\n"
 
 	// HTTP client timeout in seconds
 	CLIENT_TIMEOUT = 30
