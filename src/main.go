@@ -9,29 +9,6 @@ import (
 // Airport ICAO code length
 const ICAO_CODE_LEN = 4
 
-/* Returns true if code is inside slice s. */
-func Contains(s []string, code string) bool {
-	for i := range s {
-		if s[i] == code {
-			return true
-		}
-	}
-	return false
-}
-
-/* Rewrites the passed slice, omitting duplicate values. */
-func RemoveDuplicates(codes []string) []string {
-	clean := make([]string, 0, len(codes))
-
-	for i := range codes {
-		if !Contains(clean, codes[i]) {
-			clean = append(clean, codes[i])
-		}
-	}
-
-	return clean
-}
-
 func main() {
 	log.SetFlags(0)
 
@@ -51,5 +28,5 @@ func main() {
 		}
 	}
 
-	fmt.Println(GetReport(RemoveDuplicates(codes), !*noTAF))
+	fmt.Println(GetReport(PrepareCodesList(codes), !*noTAF))
 }
