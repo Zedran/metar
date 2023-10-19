@@ -10,14 +10,13 @@ const (
 	NF_PHRASE  = "No %s found for %s"
 )
 
-/* Finding structure holds the extracted data. */
+/* Finding structure holds the extracted airport data. */
 type Finding struct {
 	// Airport Code
-	Code, 
+	Code  string
 	
-	// Extracted Reports
-	METAR, 	
-	TAF    string
+	METAR string
+	TAF   string
 }
 
 /* Returns the string containing the formatted report. */
