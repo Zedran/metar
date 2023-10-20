@@ -22,25 +22,20 @@ func PointerToFinding(finds []*Finding, line string) *Finding {
 	return nil
 }
 
-/* Removes duplicates and changes all letters in codes to upper case. */
-func PrepareCodesList(codes []string) []string {
-	processed := removeDuplicates(codes)
+/* Removes duplicates, invalid codes and changes every code to upper case. */
+func PrepareCodes(codes []string) []string {
+	const ICAO_CODE_LEN = 4
 
-	for i := range processed {
-		processed[i] = strings.ToUpper(processed[i])
-	}
-	
-	return processed
-}
-
-/* Returns the slice without duplicate strings. */
-func removeDuplicates(codes []string) []string {
 	clean := make([]string, 0, len(codes))
 
 	for i := range codes {
-		if !contains(clean, codes[i]) {
+		if !contains(clean, codes[i]) && len(codes[i]) == ICAO_CODE_LEN {
 			clean = append(clean, codes[i])
 		}
+	}
+
+	for i := range clean {
+		clean[i] = strings.ToUpper(clean[i])
 	}
 
 	return clean

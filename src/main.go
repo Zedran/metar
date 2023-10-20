@@ -6,9 +6,6 @@ import (
 	"log"
 )
 
-// Airport ICAO code length
-const ICAO_CODE_LEN = 4
-
 func main() {
 	log.SetFlags(0)
 
@@ -22,11 +19,11 @@ func main() {
 		log.Fatal("No code specified.")
 	}
 
-	for i := range codes {
-		if len(codes[i]) != ICAO_CODE_LEN {
-			log.Fatal(fmt.Sprintf("Improper code format: '%s'", codes[i]))
-		}
+	cleanCodes := PrepareCodes(codes)
+
+	if len(cleanCodes) == 0 {
+		log.Fatal("No valid code specified.")
 	}
 
-	fmt.Println(GetReport(PrepareCodesList(codes), !*noTAF))
+	fmt.Println(GetReport(cleanCodes, !*noTAF))
 }
