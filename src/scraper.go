@@ -78,6 +78,10 @@ func parseResponse(resp *http.Response, codes []string, taf bool) (string, error
 
 	for i := 0; i < len(lines); i++ {
 		f := PointerToFinding(finds, lines[i])
+		
+		if f == nil {
+			continue
+		}
 
 		metar := strings.TrimRight(lines[i], "\n")
 
