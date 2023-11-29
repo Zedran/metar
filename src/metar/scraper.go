@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 const (
@@ -22,22 +21,10 @@ const (
 
 	// Output delimiter used when more than one airport code is specified
 	OUT_DELIM      = "\n\n---------------------------------------\n\n"
-
-	// HTTP client timeout in seconds
-	CLIENT_TIMEOUT = 30
-)
-
-var (
-	client = http.Client{
-		Timeout: CLIENT_TIMEOUT * time.Second,
-		Transport: &http.Transport{
-			DisableKeepAlives: true,
-		},
-	}
 )
 
 /* Sends request to the website and returns parsed result. */
-func GetReport(codes []string, tafOn bool) string {
+func GetReport(client *http.Client, codes []string, tafOn bool) string {
 	var taf string
 	
 	if tafOn {
