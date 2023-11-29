@@ -62,7 +62,7 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 
 	finds := make([]*Finding, len(codes))
 	for i := range finds {
-		finds[i] = NewFinding(strings.ToUpper(codes[i]))
+		finds[i] = &Finding{strings.ToUpper(codes[i]), "", ""}
 	}
 
 	for i := 0; i < len(lines); i++ {
