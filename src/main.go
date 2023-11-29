@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+
+	"github.com/Zedran/weather-reports/src/metar"
 )
 
 func main() {
@@ -19,11 +21,11 @@ func main() {
 		log.Fatal("No code specified.")
 	}
 
-	cleanCodes := PrepareCodes(codes)
+	cleanCodes := metar.PrepareCodes(codes)
 
 	if len(cleanCodes) == 0 {
 		log.Fatal("No valid code specified.")
 	}
 
-	fmt.Println(GetReport(cleanCodes, !*noTAF))
+	fmt.Println(metar.GetReport(cleanCodes, !*noTAF))
 }
