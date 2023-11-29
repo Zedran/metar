@@ -25,7 +25,7 @@ const (
 /* Returns the string containing the formatted report. */
 func FindingToString(f *metar.Finding, taf bool) string {
 	if len(f.METAR) == 0 {
-		f.METAR = fmt.Sprintf(NF_PHRASE, metar.METAR_SIG, f.Code)
+		f.METAR = fmt.Sprintf(NF_PHRASE, "METAR", f.Code)
 	}
 
 	if !taf {
@@ -33,7 +33,7 @@ func FindingToString(f *metar.Finding, taf bool) string {
 	}
 
 	if len(f.TAF) == 0 {
-		f.TAF = fmt.Sprintf(NF_PHRASE, metar.TAF_SIG, f.Code)
+		f.TAF = fmt.Sprintf(NF_PHRASE, "TAF", f.Code)
 	}
 
 	return fmt.Sprintf(OUT_FORMAT, f.METAR, f.TAF)

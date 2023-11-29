@@ -13,7 +13,7 @@ func contains(s []string, code string) bool {
 }
 
 /* Returns a pointer to the Finding that holds the airport code (Finding.Code) present within line. */
-func PointerToFinding(finds []*Finding, line string) *Finding {
+func pointerToFinding(finds []*Finding, line string) *Finding {
 	for i := range finds {
 		if strings.Contains(line, finds[i].Code) {
 			return finds[i]

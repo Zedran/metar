@@ -7,23 +7,19 @@ import (
 	"strings"
 )
 
-const (
-	// Source URL
-	URL string     = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
-
-	// Character delimiting codes within the link
-	CODES_DELIM    = ","
-
-	// Report signatures used for finding right content and ensuring the proper format
-	METAR_SIG      = "METAR"
-	TAF_SIG        = "TAF"
-)
-
-/* 
-	Sends request to the website and returns parsed results as a slice of Finding structures. 
+/*
+	Sends request to the website and returns parsed results as a slice of Finding structures.
 	Errors returned are related to http package and parseResponse function.
 */
 func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, error) {
+	const (
+		// Source URL
+		URL string  = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
+		
+		// Character delimiting codes within the link
+		CODES_DELIM = ","
+	)
+
 	var taf string
 	
 	if tafOn {
@@ -51,6 +47,12 @@ func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, er
 	Errors returned relate to resp.Body reading problems.
 */
 func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, error) {
+	const (
+		// Report signatures used for finding right content and ensuring the proper format
+		METAR_SIG = "METAR"
+		TAF_SIG   = "TAF"
+	)
+
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -64,7 +66,7 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 	}
 
 	for i := 0; i < len(lines); i++ {
-		f := PointerToFinding(finds, lines[i])
+		f := pointerToFinding(finds, lines[i])
 		
 		if f == nil {
 			continue
