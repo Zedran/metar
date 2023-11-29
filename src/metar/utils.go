@@ -23,7 +23,7 @@ func pointerToFinding(finds []*Finding, line string) *Finding {
 }
 
 /* Removes duplicates, invalid codes and changes every code to upper case. */
-func PrepareCodes(codes []string) []string {
+func PrepareCodes(codes ...string) []string {
 	const ICAO_CODE_LEN = 4
 
 	clean := make([]string, 0, len(codes))

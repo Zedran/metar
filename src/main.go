@@ -74,7 +74,7 @@ func main() {
 		log.Fatal("No code specified.")
 	}
 
-	cleanCodes := metar.PrepareCodes(codes)
+	cleanCodes := metar.PrepareCodes(codes...)
 
 	if len(cleanCodes) == 0 {
 		log.Fatal("No valid code specified.")
