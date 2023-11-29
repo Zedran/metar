@@ -19,9 +19,10 @@ const (
 	TAF_SIG        = "TAF"
 )
 
-/* Sends request to the website and returns parsed results as a slice of Finding structures. 
- * Errors returned are related to http package and parseResponse function.
- */
+/* 
+	Sends request to the website and returns parsed results as a slice of Finding structures. 
+	Errors returned are related to http package and parseResponse function.
+*/
 func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, error) {
 	var taf string
 	
@@ -45,9 +46,10 @@ func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, er
 	return reports, nil
 }
 
-/* Parses the response body, looking for METAR and, optionally, TAF phrases.
- * Errors returned relate to resp.Body reading problems.
- */
+/* 
+	Parses the response body, looking for METAR and, optionally, TAF phrases. 
+	Errors returned relate to resp.Body reading problems.
+*/
 func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, error) {
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
