@@ -3,7 +3,6 @@ package metar
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -18,13 +17,12 @@ const (
 	// Report signatures used for finding right content and ensuring the proper format
 	METAR_SIG      = "METAR"
 	TAF_SIG        = "TAF"
-
-	// Output delimiter used when more than one airport code is specified
-	OUT_DELIM      = "\n\n---------------------------------------\n\n"
 )
 
-/* Sends request to the website and returns parsed result. */
-func GetReport(client *http.Client, codes []string, tafOn bool) string {
+/* Sends request to the website and returns parsed results as a slice of Finding structures. 
+ * Errors returned are related to http package and parseResponse function.
+ */
+func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, error) {
 	var taf string
 	
 	if tafOn {
@@ -35,25 +33,25 @@ func GetReport(client *http.Client, codes []string, tafOn bool) string {
 
 	resp, err := client.Get(fmt.Sprintf(URL, strings.Join(codes, CODES_DELIM), taf))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	report, err := parseResponse(resp, codes, tafOn)
+	reports, err := parseResponse(resp, codes, tafOn)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return report
+	return reports, nil
 }
 
 /* Parses the response body, looking for METAR and, optionally, TAF phrases.
  * Errors returned relate to resp.Body reading problems.
  */
-func parseResponse(resp *http.Response, codes []string, taf bool) (string, error) {
+func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, error) {
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	lines := strings.Split(string(stream), "\n\n")
@@ -95,19 +93,5 @@ func parseResponse(resp *http.Response, codes []string, taf bool) (string, error
 		}
 	}
 
-	var b strings.Builder
-
-	fmt.Fprint(&b, "\n")
-
-	for i := range finds {
-		fmt.Fprint(&b, finds[i].ToString(taf))
-
-		if i < len(finds) - 1 {
-			fmt.Fprint(&b, OUT_DELIM)
-		}
-	}
-
-	fmt.Fprint(&b, "\n")
-
-	return b.String(), nil
+	return finds, nil
 }
