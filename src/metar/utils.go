@@ -29,13 +29,13 @@ func PrepareCodes(codes []string) []string {
 	clean := make([]string, 0, len(codes))
 
 	for i := range codes {
+		codes[i] = strings.ToUpper(codes[i])
+	}
+
+	for i := range codes {
 		if !contains(clean, codes[i]) && len(codes[i]) == ICAO_CODE_LEN {
 			clean = append(clean, codes[i])
 		}
-	}
-
-	for i := range clean {
-		clean[i] = strings.ToUpper(clean[i])
 	}
 
 	return clean
