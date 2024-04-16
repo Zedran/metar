@@ -62,7 +62,7 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 
 	finds := make([]*Finding, len(codes))
 	for i := range finds {
-		finds[i] = &Finding{strings.ToUpper(codes[i]), "", ""}
+		finds[i] = &Finding{strings.ToUpper(codes[i]), "", "", true}
 	}
 
 	for i := 0; i < len(lines); i++ {
@@ -78,6 +78,10 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 			f.METAR = metar
 		} else {
 			f.METAR = METAR_SIG + " " + metar
+		}
+
+		if strings.HasSuffix(f.METAR, "$") {
+			f.OK = false
 		}
 
 		if !taf {

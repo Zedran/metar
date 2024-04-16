@@ -7,4 +7,8 @@ type Finding struct {
 	
 	METAR string
 	TAF   string
+
+	// Sensor's health: false indicates that sensor at the airport
+	// requires maintenance and some data may be inaccurate
+	OK    bool
 }
