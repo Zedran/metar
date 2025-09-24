@@ -10,9 +10,9 @@ func TestPrepareCodes(t *testing.T) {
 	}
 
 	cases := []testCase{
-		{input: []string{""},                     expected: []string{}              },
-		{input: []string{"abc", "abcd"},          expected: []string{"ABCD"}        },
-		{input: []string{"abcD", "ABCD", "abcd"}, expected: []string{"ABCD"}        },
+		{input: []string{""}, expected: []string{}},
+		{input: []string{"abc", "abcd"}, expected: []string{"ABCD"}},
+		{input: []string{"abcD", "ABCD", "abcd"}, expected: []string{"ABCD"}},
 		{input: []string{"abcD", "ABCD", "EFGH"}, expected: []string{"ABCD", "EFGH"}},
 	}
 
@@ -27,6 +27,6 @@ func TestPrepareCodes(t *testing.T) {
 			if output[i] != c.expected[i] {
 				t.Errorf("Failed for %v (content) :: output: %v -- expected: %v", c.input, output, c.expected)
 			}
-		}		
+		}
 	}
 }

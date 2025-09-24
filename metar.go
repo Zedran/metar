@@ -8,20 +8,20 @@ import (
 )
 
 /*
-	Sends request to the website and returns parsed results as a slice of Finding structures.
-	Errors returned are related to http package and parseResponse function.
+Sends request to the website and returns parsed results as a slice of Finding structures.
+Errors returned are related to http package and parseResponse function.
 */
 func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, error) {
 	const (
 		// Source URL
-		URL string  = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
-		
+		URL string = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
+
 		// Character delimiting codes within the link
 		CODES_DELIM = ","
 	)
 
 	var taf string
-	
+
 	if tafOn {
 		taf = "true"
 	} else {
@@ -42,9 +42,9 @@ func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, er
 	return reports, nil
 }
 
-/* 
-	Parses the response body, looking for METAR and, optionally, TAF phrases. 
-	Errors returned relate to resp.Body reading problems.
+/*
+Parses the response body, looking for METAR and, optionally, TAF phrases.
+Errors returned relate to resp.Body reading problems.
 */
 func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, error) {
 	const (
@@ -67,7 +67,7 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 
 	for i := 0; i < len(lines); i++ {
 		f := pointerToFinding(finds, lines[i])
-		
+
 		if f == nil {
 			continue
 		}
@@ -88,8 +88,8 @@ func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, e
 			continue
 		}
 
-		if i < len(lines) - 1 {
-			tafR := strings.TrimRight(lines[i + 1], "\n")
+		if i < len(lines)-1 {
+			tafR := strings.TrimRight(lines[i+1], "\n")
 
 			if strings.HasPrefix(tafR, TAF_SIG) {
 				f.TAF = tafR
