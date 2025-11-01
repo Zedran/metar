@@ -102,8 +102,8 @@ func parseResponse(resp string, tafOn bool) ([]*Finding, error) {
 	}
 
 	for _, f := range finds {
-		f.METAR = strings.TrimRight(f.METAR, " \n")
-		f.TAF = strings.TrimRight(f.TAF, " \n")
+		f.METAR = strings.TrimRight(f.METAR, "\n")
+		f.TAF = strings.TrimRight(f.TAF, "\n")
 		if !strings.HasSuffix(f.METAR, "$") {
 			f.OK = true
 		}
