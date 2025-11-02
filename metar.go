@@ -1,6 +1,7 @@
 package metar
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ Errors returned are related to http package and parseResponse function.
 func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, error) {
 	const (
 		// Source URL
-		URL string = "https://aviationweather.gov/cgi-bin/data/metar.php?ids=%s&hours=0&order=id%%2C-obs&sep=true&taf=%s"
+		URL string = "https://aviationweather.gov/api/data/metar?ids=%s&format=raw&taf=%s"
 
 		// Character delimiting codes within the link
 		CODES_DELIM = ","
@@ -34,70 +35,77 @@ func GetReports(client *http.Client, codes []string, tafOn bool) ([]*Finding, er
 	}
 	defer resp.Body.Close()
 
-	reports, err := parseResponse(resp, codes, tafOn)
-	if err != nil {
-		return nil, err
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
 	}
-
-	return reports, nil
-}
-
-/*
-Parses the response body, looking for METAR and, optionally, TAF phrases.
-Errors returned relate to resp.Body reading problems.
-*/
-func parseResponse(resp *http.Response, codes []string, taf bool) ([]*Finding, error) {
-	const (
-		// Report signatures used for finding right content and ensuring the proper format
-		METAR_SIG = "METAR"
-		TAF_SIG   = "TAF"
-	)
 
 	stream, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	lines := strings.Split(string(stream), "\n\n")
+	return parseResponse(string(stream), tafOn)
+}
 
-	finds := make([]*Finding, len(codes))
-	for i := range finds {
-		finds[i] = &Finding{strings.ToUpper(codes[i]), "", "", true}
+/*
+Parses the response body, looking for METAR and, optionally, TAF phrases.
+Errors returned relate to resp.Body reading problems or unexpected response
+format.
+*/
+func parseResponse(resp string, tafOn bool) ([]*Finding, error) {
+	lines := strings.Split(resp, "\n")
+
+	finds := make([]*Finding, 0)
+
+	var (
+		b       strings.Builder
+		current *Finding
+	)
+
+	for _, ln := range lines {
+		if strings.HasPrefix(ln, "METAR") {
+			if current != nil {
+				if tafOn {
+					current.TAF = b.String()
+				} else {
+
+					current.METAR = b.String()
+				}
+				b.Reset()
+			}
+			current = new(Finding)
+			current.Code = ln[6:10]
+			finds = append(finds, current)
+			b.WriteString(strings.TrimRight(ln, " ") + "\n")
+			continue
+		}
+
+		if strings.HasPrefix(ln, "TAF") {
+			if current == nil {
+				return nil, errors.New("unexpected formatting")
+			}
+			current.METAR = b.String()
+			b.Reset()
+			b.WriteString(strings.TrimRight(ln, " ") + "\n")
+			continue
+		}
+
+		b.WriteString(strings.TrimRight(ln, " ") + "\n")
 	}
 
-	for i := 0; i < len(lines); i++ {
-		f := pointerToFinding(finds, lines[i])
-
-		if f == nil {
-			continue
-		}
-
-		metar := strings.TrimRight(lines[i], "\n")
-
-		if strings.HasPrefix(metar, METAR_SIG) {
-			f.METAR = metar
+	if b.Len() > 0 {
+		if tafOn {
+			current.TAF = b.String()
 		} else {
-			f.METAR = METAR_SIG + " " + metar
+			current.METAR = b.String()
 		}
+	}
 
-		if strings.HasSuffix(f.METAR, "$") {
-			f.OK = false
-		}
-
-		if !taf {
-			continue
-		}
-
-		if i < len(lines)-1 {
-			tafR := strings.TrimRight(lines[i+1], "\n")
-
-			if strings.HasPrefix(tafR, TAF_SIG) {
-				f.TAF = tafR
-			} else {
-				f.TAF = TAF_SIG + " " + tafR
-			}
-
-			i++
+	for _, f := range finds {
+		f.METAR = strings.TrimRight(f.METAR, "\n")
+		f.TAF = strings.TrimRight(f.TAF, "\n")
+		if !strings.HasSuffix(f.METAR, "$") {
+			f.OK = true
 		}
 	}
 

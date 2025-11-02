@@ -1,0 +1,146 @@
+[
+    {
+        "input_file": "list_bad_sensor_notaf.txt",
+        "taf_on": false,
+        "expected": [
+            {
+                "code": "KBOS",
+                "metar": "METAR KBOS 011354Z 26017G28KT 10SM FEW035 FEW250 11/M01 A2971 RMK AO2 PK WND 28030/1328 SLP061 T01061006 $",
+                "taf": "",
+                "ok": false
+            },
+            {
+                "code": "KMCI",
+                "metar": "METAR KMCI 011353Z 30007KT 10SM SCT039 SCT110 03/00 A3016 RMK AO2 SLP215 T00330000 $",
+                "taf": "",
+                "ok": false
+            },
+            {
+                "code": "KORD",
+                "metar": "METAR KORD 011351Z 23005KT 10SM BKN070 06/02 A3002 RMK AO2 SLP169 T00560022 $",
+                "taf": "",
+                "ok": false
+            }
+        ]
+    },
+    {
+        "input_file": "list_bad_sensor.txt",
+        "taf_on": true,
+        "expected": [
+            {
+                "code": "KBOS",
+                "metar": "METAR KBOS 011354Z 26017G28KT 10SM FEW035 FEW250 11/M01 A2971 RMK AO2 PK WND 28030/1328 SLP061 T01061006 $",
+                "taf": "TAF KBOS 011120Z 0112/0218 27018G30KT P6SM FEW035\n  FM011700 27016G25KT P6SM SCT040\n  FM012300 29013G23KT P6SM FEW100\n  FM020300 29009KT P6SM FEW250",
+                "ok": false
+            },
+            {
+                "code": "KMCI",
+                "metar": "METAR KMCI 011353Z 30007KT 10SM SCT039 SCT110 03/00 A3016 RMK AO2 SLP215 T00330000 $",
+                "taf": "TAF KMCI 011123Z 0112/0212 29006KT P6SM BKN150\n  FM011600 33010KT P6SM SCT028 OVC035\n  FM011800 33010KT P6SM BKN045\n  FM012200 33007KT P6SM SCT050",
+                "ok": false
+            },
+            {
+                "code": "KORD",
+                "metar": "METAR KORD 011351Z 23005KT 10SM BKN070 06/02 A3002 RMK AO2 SLP169 T00560022 $",
+                "taf": "TAF KORD 011121Z 0112/0218 27007KT P6SM SCT040 OVC070\n  FM012300 35008KT P6SM -SHRA SCT025 BKN035\n  PROB30 0123/0204 3SM -SHRA BR BKN020\n  FM020700 35006KT P6SM SCT025 BKN035\n  FM021400 22007KT P6SM FEW030 SCT300",
+                "ok": false
+            }
+        ]
+    },
+    {
+        "input_file": "list_good_sensor_notaf.txt",
+        "taf_on": false,
+        "expected": [
+            {
+                "code": "EPGD",
+                "metar": "METAR EPGD 011400Z 16007KT CAVOK 10/06 Q1014",
+                "taf": "",
+                "ok": true
+            },
+            {
+                "code": "EPKK",
+                "metar": "METAR EPKK 011400Z 06006KT CAVOK 17/08 Q1016",
+                "taf": "",
+                "ok": true
+            },
+            {
+                "code": "EPWA",
+                "metar": "METAR EPWA 011400Z 13008KT 9999 BKN040 13/05 Q1017 NOSIG",
+                "taf": "",
+                "ok": true
+            }
+        ]
+    },
+    {
+        "input_file": "list_good_sensor.txt",
+        "taf_on": true,
+        "expected": [
+            {
+                "code": "EPGD",
+                "metar": "METAR EPGD 011400Z 16007KT CAVOK 10/06 Q1014",
+                "taf": "TAF EPGD 011130Z 0112/0212 16010KT CAVOK\n  PROB40\n  TEMPO 0121/0201 3000 BR\n  BECMG 0201/0204 25006KT -RA BKN005\n  TEMPO 0201/0206 3000 -RA BR BKN002\n  PROB40\n  TEMPO 0203/0210 0800 FG BKN001\n  TEMPO 0206/0212 2000 BR BKN002",
+                "ok": true
+            },
+            {
+                "code": "EPKK",
+                "metar": "METAR EPKK 011400Z 06006KT CAVOK 17/08 Q1016",
+                "taf": "TAF EPKK 011430Z 0115/0215 05005KT CAVOK\n  TEMPO 0121/0206 3000 BR\n  PROB30\n  TEMPO 0200/0205 1200 BR",
+                "ok": true
+            },
+            {
+                "code": "EPWA",
+                "metar": "METAR EPWA 011400Z 13008KT 9999 BKN040 13/05 Q1017 NOSIG",
+                "taf": "TAF EPWA 011430Z 0115/0215 13010KT 9999 SCT040\n  BECMG 0200/0203 VRB02KT",
+                "ok": true
+            }
+        ]
+    },
+    {
+        "input_file": "single_bad_sensor_notaf.txt",
+        "taf_on": false,
+        "expected": [
+            {
+                "code": "KMCI",
+                "metar": "METAR KMCI 011353Z 30007KT 10SM SCT039 SCT110 03/00 A3016 RMK AO2 SLP215 T00330000 $",
+                "taf": "",
+                "ok": false
+            }
+        ]
+    },
+    {
+        "input_file": "single_bad_sensor.txt",
+        "taf_on": true,
+        "expected": [
+            {
+                "code": "KMCI",
+                "metar": "METAR KMCI 011353Z 30007KT 10SM SCT039 SCT110 03/00 A3016 RMK AO2 SLP215 T00330000 $",
+                "taf": "TAF KMCI 011123Z 0112/0212 29006KT P6SM BKN150\n  FM011600 33010KT P6SM SCT028 OVC035\n  FM011800 33010KT P6SM BKN045\n  FM012200 33007KT P6SM SCT050",
+                "ok": false
+            }
+        ]
+    },
+    {
+        "input_file": "single_good_sensor_notaf.txt",
+        "taf_on": false,
+        "expected": [
+            {
+                "code": "EGLL",
+                "metar": "METAR EGLL 011420Z AUTO 23018KT 9999 -RA BKN036/// BKN047/// //////TCU 14/07 Q1003",
+                "taf": "",
+                "ok": true
+            }
+        ]
+    },
+    {
+        "input_file": "single_good_sensor.txt",
+        "taf_on": true,
+        "expected": [
+            {
+                "code": "EGLL",
+                "metar": "METAR EGLL 011420Z AUTO 23018KT 9999 -RA BKN036/// BKN047/// //////TCU 14/07 Q1003",
+                "taf": "TAF AMD EGLL 011218Z 0112/0218 20015KT 9999 SCT020\n  TEMPO 0112/0120 6000 SHRA\n  TEMPO 0112/0114 23018G28KT\n  PROB30\n  TEMPO 0112/0120 4000 +SHRA BKN014CB\n  TEMPO 0204/0208 6000 RA\n  PROB30\n  TEMPO 0204/0208 4000 +RA SHRA\n  BECMG 0208/0210 26010KT",
+                "ok": true
+            }
+        ]
+    }
+]
