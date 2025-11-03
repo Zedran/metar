@@ -12,16 +12,6 @@ func contains(s []string, code string) bool {
 	return false
 }
 
-/* Returns a pointer to the Finding that holds the airport code (Finding.Code) present within line. */
-func pointerToFinding(finds []*Finding, line string) *Finding {
-	for i := range finds {
-		if strings.Contains(line, finds[i].Code) {
-			return finds[i]
-		}
-	}
-	return nil
-}
-
 /* Removes duplicates, invalid codes and changes every code to upper case. */
 func PrepareCodes(codes ...string) []string {
 	const ICAO_CODE_LEN = 4
